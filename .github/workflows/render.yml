@@ -29,6 +29,9 @@ on:
       concurrency:
         description: Browser tabs per job
         default: '4'
+      timeout:
+        description: Milliseconds allowed per frame, including the first (font and image loading)
+        default: '240000'
       join:
         description: Join the chunks into one file
         type: boolean
@@ -89,12 +92,13 @@ jobs:
           GL: ${{ inputs.gl }}
           CONC: ${{ inputs.concurrency }}
           I: ${{ matrix.i }}
+          TIMEOUT: ${{ inputs.timeout }}
         run: |
           mkdir -p "$GITHUB_WORKSPACE/out"
           tag=$(printf %02d "$I")
           s=$(date +%s)
           npx remotion render src/index.ts "$COMP" "$GITHUB_WORKSPACE/out/chunk-$tag.mp4" \
-            --frames="$RANGE" --props="$PROPS" --gl="$GL" --concurrency="$CONC" --log=error
+            --frames="$RANGE" --props="$PROPS" --gl="$GL" --concurrency="$CONC" --timeout="$TIMEOUT" --log=error
           e=$(date +%s)
           n=$(( ${RANGE#*-} - ${RANGE%-*} + 1 ))
           fps=$(python3 -c "print(round($n / max(1, $e - $s), 3))")
@@ -124,6 +128,8 @@ jobs:
         with:
           path: parts
           merge-multiple: true
+      - name: Install ffmpeg
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
       - name: Join
         env:
           RENDER_KEY: ${{ secrets.RENDER_KEY }}
