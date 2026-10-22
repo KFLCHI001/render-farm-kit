@@ -1,0 +1,16 @@
+{
+  "name": "wan22-i2v-example",
+  "template": "../templates/video_wan2_2_14B_i2v.json",
+  "nodes": [
+    { "node": "LoadImage", "file": "refs/start.png" },
+    {
+      "node": "Image to Video (Wan2.2)",
+      "values": {
+        "prompt": "The camera slowly pushes in as she turns her head and smiles.",
+        "duration": 5,
+        "noise_seed": 1234,
+        "enable_turbo_mode": true
+      }
+    }
+  ]
+}

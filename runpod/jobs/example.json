@@ -1,0 +1,18 @@
+{
+  "name": "h3-r2v-example",
+  "template": "../templates/video_minimax_h3_r2v.json",
+  "set": { "seed": 1234 },
+  "nodes": [
+    { "node": "Input Text (Prompt)", "values": { "value": "Cinematic look, natural light. Use <Picture 1> as the character and <Picture 2> as the place. She walks into the frame and says hello to the camera. Soft room tone and footsteps." } },
+    { "node": "137", "file": "refs/character.png" },
+    { "node": "139", "file": "refs/place.png" },
+    { "node": "Float (Duration)", "values": { "value": 5 } },
+    { "node": "Resolution Selector (Size)", "values": { "aspect_ratio": "16:9 (Widescreen)", "megapixels": 0.4 } },
+    { "node": "UNETLoader", "values": { "unet_name": "minimax_h3_ref2va_pruned_fp8_scaled.safetensors" } },
+    { "node": "CLIPLoader", "values": { "clip_name": "qwen3vl_32b_minimax_h3_int8_convrot.safetensors" } },
+    { "node": "119", "values": { "vae_name": "minimax_h3_video_vae_fp16.safetensors" } },
+    { "node": "120", "values": { "vae_name": "minimax_h3_audio_vae_fp32.safetensors" } },
+    { "node": "Boolean (Enable Lightning LoRA)", "values": { "value": true } },
+    { "node": "LoraLoaderModelOnly", "values": { "lora_name": "minimax_h3_ref2v_turbo_4step_v1.0_768p_comfyui_bf16.safetensors", "strength_model": 1.0 } }
+  ]
+}

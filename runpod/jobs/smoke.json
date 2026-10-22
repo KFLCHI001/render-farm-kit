@@ -1,0 +1,10 @@
+{
+  "name": "smoke",
+  "template": "../tests/smoke_template.json",
+  "nodes": [
+    {
+      "node": "LoadImage",
+      "file": "../tests/smoke.png"
+    }
+  ]
+}

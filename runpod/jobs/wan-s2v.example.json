@@ -1,0 +1,13 @@
+{
+  "name": "wan22-s2v-example",
+  "template": "../templates/video_wan2_2_14B_s2v.json",
+  "set": { "seed": 1234 },
+  "nodes": [
+    { "node": "LoadImage", "file": "refs/speaker.png" },
+    { "node": "LoadAudio", "file": "refs/line.wav" },
+    { "node": "CLIP Text Encode (Positive Prompt)", "values": { "text": "A woman speaks to the camera in a warm, quiet room." } },
+    { "node": "LoraLoaderModelOnly", "bypass": true },
+    { "node": "Steps", "values": { "value": 20 } },
+    { "node": "CFG", "values": { "value": 6 } }
+  ]
+}
