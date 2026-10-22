@@ -1,0 +1,150 @@
+name: render
+
+# Splits a Remotion render into frame chunks, renders them in parallel on
+# standard GitHub-hosted runners (free and unlimited on public repos), then
+# joins the chunks. If the RENDER_KEY secret is set, every video file is
+# encrypted before upload, so artifacts on a public repo stay private.
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: Path to the Remotion project
+        default: examples/bible-stories
+      composition:
+        description: Composition id
+        required: true
+      frames:
+        description: Frame range, start-end (inclusive)
+        required: true
+      chunks:
+        description: Number of parallel jobs (max 20)
+        default: '4'
+      props:
+        description: Input props as JSON
+        default: '{}'
+      gl:
+        description: OpenGL backend (swangle on CPU runners)
+        default: swangle
+      concurrency:
+        description: Browser tabs per job
+        default: '4'
+      join:
+        description: Join the chunks into one file
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.split.outputs.matrix }}
+    steps:
+      - id: split
+        env:
+          FRAMES: ${{ inputs.frames }}
+          CHUNKS: ${{ inputs.chunks }}
+        shell: python
+        run: |
+          import json, os
+          a, b = map(int, os.environ["FRAMES"].split("-"))
+          n = max(1, min(20, int(os.environ["CHUNKS"]), b - a + 1))
+          size = -(-(b - a + 1) // n)
+          parts = [{"i": i, "range": f"{s}-{min(b, s + size - 1)}"}
+                   for i, s in enumerate(range(a, b + 1, size))]
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write("matrix=" + json.dumps({"include": parts}) + "\n")
+
+  render:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+    defaults:
+      run:
+        working-directory: ${{ inputs.project }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: ${{ inputs.project }}/package-lock.json
+      - name: Install
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libnss3 libdbus-1-3 libatk1.0-0 libgbm1 libxrandr2 libxkbcommon0 libxfixes3 libxcomposite1 libxdamage1 libatk-bridge2.0-0 libpango-1.0-0 libcairo2 libcups2 >/dev/null
+          npm ci --no-audit --no-fund
+          npx remotion browser ensure
+      - name: Render chunk ${{ matrix.i }} (${{ matrix.range }})
+        env:
+          COMP: ${{ inputs.composition }}
+          RANGE: ${{ matrix.range }}
+          PROPS: ${{ inputs.props }}
+          GL: ${{ inputs.gl }}
+          CONC: ${{ inputs.concurrency }}
+          I: ${{ matrix.i }}
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/out"
+          tag=$(printf %02d "$I")
+          s=$(date +%s)
+          npx remotion render src/index.ts "$COMP" "$GITHUB_WORKSPACE/out/chunk-$tag.mp4" \
+            --frames="$RANGE" --props="$PROPS" --gl="$GL" --concurrency="$CONC" --log=error
+          e=$(date +%s)
+          n=$(( ${RANGE#*-} - ${RANGE%-*} + 1 ))
+          fps=$(python3 -c "print(round($n / max(1, $e - $s), 3))")
+          echo "chunk=$I frames=$RANGE seconds=$((e - s)) fps=$fps cpus=$(nproc)" | tee "$GITHUB_WORKSPACE/out/timing-$tag.txt"
+      - name: Encrypt
+        env:
+          RENDER_KEY: ${{ secrets.RENDER_KEY }}
+        working-directory: out
+        run: |
+          if [ -n "$RENDER_KEY" ]; then
+            for f in *.mp4; do
+              openssl enc -aes-256-cbc -pbkdf2 -salt -in "$f" -out "$f.enc" -pass env:RENDER_KEY && rm "$f"
+            done
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: chunk-${{ matrix.i }}
+          path: out/
+          retention-days: 3
+
+  join:
+    needs: render
+    if: inputs.join
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: parts
+          merge-multiple: true
+      - name: Join
+        env:
+          RENDER_KEY: ${{ secrets.RENDER_KEY }}
+        working-directory: parts
+        run: |
+          if [ -n "$RENDER_KEY" ]; then
+            for f in *.enc; do
+              openssl enc -d -aes-256-cbc -pbkdf2 -in "$f" -out "${f%.enc}" -pass env:RENDER_KEY
+            done
+          fi
+          for f in $(ls chunk-*.mp4 | sort); do echo "file '$f'"; done > list.txt
+          ffmpeg -loglevel error -f concat -safe 0 -i list.txt -c copy joined.mp4
+          mkdir ../final
+          cat timing-*.txt > ../final/timing.txt
+          if [ -n "$RENDER_KEY" ]; then
+            openssl enc -aes-256-cbc -pbkdf2 -salt -in joined.mp4 -out ../final/joined.mp4.enc -pass env:RENDER_KEY
+          else
+            mv joined.mp4 ../final/
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: joined
+          path: final/
+          retention-days: 3

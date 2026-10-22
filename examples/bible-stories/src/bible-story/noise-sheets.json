@@ -1,0 +1,8 @@
+{
+  "cut": { "file": "cut.png", "x": -1000, "y": -1400, "w": 2800, "h": 3700, "k": 0.5 },
+  "inkEdge": { "file": "ink-edge.png", "x": -1000, "y": -1400, "w": 2800, "h": 3700, "k": 0.5 },
+  "inkBleed": { "file": "ink-bleed.png", "x": -200, "y": -200, "w": 1480, "h": 2320, "k": 0.5 },
+  "stainBig": { "file": "stain-big.png", "x": -120, "y": -120, "w": 1380, "h": 2200, "k": 0.5 },
+  "stainMid": { "file": "stain-mid.png", "x": -120, "y": -120, "w": 1380, "h": 2200, "k": 0.5 },
+  "fibre": { "file": "fibre.png", "x": 0, "y": 0, "w": 1080, "h": 1920, "k": 1 }
+}
