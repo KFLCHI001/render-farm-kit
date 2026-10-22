@@ -98,7 +98,7 @@ jobs:
           tag=$(printf %02d "$I")
           s=$(date +%s)
           npx remotion render src/index.ts "$COMP" "$GITHUB_WORKSPACE/out/chunk-$tag.mp4" \
-            --frames="$RANGE" --props="$PROPS" --gl="$GL" --concurrency="$CONC" --timeout="$TIMEOUT" --log=error
+            --frames="$RANGE" --props="$PROPS" --gl="$GL" --concurrency="$CONC" --timeout="$TIMEOUT" --muted --log=error
           e=$(date +%s)
           n=$(( ${RANGE#*-} - ${RANGE%-*} + 1 ))
           fps=$(python3 -c "print(round($n / max(1, $e - $s), 3))")
@@ -141,7 +141,8 @@ jobs:
             done
           fi
           for f in $(ls chunk-*.mp4 | sort); do echo "file '$f'"; done > list.txt
-          ffmpeg -loglevel error -f concat -safe 0 -i list.txt -c copy joined.mp4
+          # Video only: a silent AAC track pads every chunk and shifts the next one
+          ffmpeg -loglevel error -f concat -safe 0 -i list.txt -an -c copy joined.mp4
           mkdir ../final
           cat timing-*.txt > ../final/timing.txt
           if [ -n "$RENDER_KEY" ]; then
