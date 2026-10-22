@@ -2,7 +2,7 @@
 
 Render long Remotion videos without a render machine. The `render` workflow splits a composition into frame chunks, renders them in parallel on standard GitHub-hosted runners, and joins the result. On a public repository those runners cost nothing.
 
-Work in progress. Planned next: a one-command RunPod runner for GPU renders and ComfyUI video generation (MiniMax H3, Wan 2.2), with the same chunk-and-join flow.
+`runpod/` holds the GPU side: pod setup, a ComfyUI job runner and tested job files for MiniMax H3 and Wan 2.2. See [runpod/README.md](runpod/README.md).
 
 ## Use
 

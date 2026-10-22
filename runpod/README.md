@@ -62,6 +62,15 @@ The converter handles subgraphs, bypassed and muted nodes, Reroute and Primitive
 
 `jobs/smoke.json` needs no model: it uploads a small image, inverts it and downloads the result. Run it first on a fresh pod to check the tunnel, upload, queue and download in seconds.
 
+## MiniMax H3 notes
+
+Measured on one L40S 48 GB with the 4-step turbo LoRA: about 50 s for a 5 s clip at 480x864 once the models are loaded, about 135 s at 768x1344.
+
+- H3 writes its own speech from the prompt. A reference audio sets the voice, not the words. Put the exact line in quotes in the prompt and write `in the voice of <Audio 1>`. A prompt such as "saying <Audio 1> exactly as it is" makes the model speak those words.
+- For a fixed voice across clips, run the result through a voice changer afterwards.
+- People look most natural with `fal/MiniMax-H3-Realism-People-LoRA` at about 0.8 on top of the turbo LoRA.
+- Stylised 2D scenes keep the look of the reference image but movement and camera are weak. Use it for people, not for animated stories.
+
 ## Tests
 
 ```bash
