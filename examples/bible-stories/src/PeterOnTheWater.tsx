@@ -15,7 +15,7 @@ import { Bolt, H, Rain, Sea, Sky, Spray, Vignette, W, Weather, clamp01, layerBas
 // 510 he sees the wind; the music cuts at 540 | 570 he sinks, "Lord, save me!" |
 // 664 the hand of light; white flash at 672, the storm is gone | 680 calm |
 // 790 Matthew 14:31 card.
-// appCut: the in-app cut, with no captions, no verse card text and no darkening behind the card.
+// appCut: the in-app cut, with no captions, and no verse card text. The darkening behind the card stays.
 export type PeterOnTheWaterProps = {
   durationSeconds: number;
   bedAudio?: string;
@@ -126,7 +126,7 @@ const Gunwale = ({ y, tilt }: { y: number; tilt: number }) => (
 
 const storming = (flash: number): Weather => ({ storm: 1, flash });
 
-const Shot = ({ f, appCut = false }: { f: number; appCut?: boolean }) => {
+const Shot = ({ f }: { f: number }) => {
   const t = f / FPS;
   const L = 16;
 
@@ -344,7 +344,7 @@ const Shot = ({ f, appCut = false }: { f: number; appCut?: boolean }) => {
       </Cam>
       <Gunwale y={1780} tilt={0} />
       <Wren x={880} y={1716} scale={0.95} flip mood={{ t, wet: 1 - 0.6 * dry, shake, eyes: f >= 744 ? 0.55 : 1, lookX: -0.3, warm: 0.5 }} />
-      {!appCut && f >= 790 ? <rect x={0} y={0} width={W} height={H} fill="#03050c" opacity={interpolate(f, [790, 806], [0, 0.42], { extrapolateRight: 'clamp' })} /> : null}
+      {f >= 790 ? <rect x={0} y={0} width={W} height={H} fill="#03050c" opacity={interpolate(f, [790, 806], [0, 0.42], { extrapolateRight: 'clamp' })} /> : null}
       {whiteOut > 0 ? <rect x={0} y={0} width={W} height={H} fill="#fffaf0" opacity={whiteOut} /> : null}
     </g>
   );
@@ -372,7 +372,7 @@ export const PeterOnTheWater = (props: PeterOnTheWaterProps) => {
   return (
     <AbsoluteFill style={{ backgroundColor: '#02040a' }}>
       <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ position: 'absolute', inset: 0 }}>
-        <Shot f={f} appCut={props.appCut} />
+        <Shot f={f} />
         <Vignette strength={f >= BEATS.calm ? 0.55 : 0.8} />
       </svg>
       {props.grain ? (
