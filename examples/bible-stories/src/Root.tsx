@@ -2,6 +2,9 @@ import { CalculateMetadataFunction, Composition } from 'remotion';
 import { WhoStopped, WhoStoppedProps, defaultWhoStoppedProps } from './WhoStopped';
 import { AsHeDidBefore, AsHeDidBeforeProps, defaultAsHeDidBeforeProps } from './AsHeDidBefore';
 import { WhoStoppedShorts, WhoStoppedShortsProps, defaultWhoStoppedShortsProps } from './WhoStoppedShorts';
+import { FatherRan, FatherRanProps, defaultFatherRanProps } from './FatherRan';
+import { PeterOnTheWater, PeterOnTheWaterProps, defaultPeterOnTheWaterProps } from './PeterOnTheWater';
+import { SmallestStone, SmallestStoneProps, defaultSmallestStoneProps } from './SmallestStone';
 
 const FPS = 30;
 
@@ -43,6 +46,36 @@ export const RemotionRoot = () => {
         width={1080}
         height={1920}
         defaultProps={defaultWhoStoppedShortsProps}
+      />
+      <Composition
+        id="FatherRan"
+        component={FatherRan}
+        durationInFrames={Math.round(defaultFatherRanProps.durationSeconds * FPS)}
+        calculateMetadata={durationFromProps<FatherRanProps>()}
+        fps={FPS}
+        width={1080}
+        height={1920}
+        defaultProps={defaultFatherRanProps}
+      />
+      <Composition
+        id="SmallestStone"
+        component={SmallestStone}
+        durationInFrames={Math.round(defaultSmallestStoneProps.durationSeconds * FPS)}
+        calculateMetadata={durationFromProps<SmallestStoneProps>()}
+        fps={FPS}
+        width={1080}
+        height={1920}
+        defaultProps={defaultSmallestStoneProps}
+      />
+      <Composition
+        id="PeterOnTheWater"
+        component={PeterOnTheWater}
+        durationInFrames={Math.round(defaultPeterOnTheWaterProps.durationSeconds * FPS)}
+        calculateMetadata={durationFromProps<PeterOnTheWaterProps>()}
+        fps={FPS}
+        width={1080}
+        height={1920}
+        defaultProps={defaultPeterOnTheWaterProps}
       />
     </>
   );
